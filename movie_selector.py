@@ -31,6 +31,18 @@ def wait_for_user():
     """Pauses execution so the user can read the results."""
     input("\n👉 Appuyez sur [Entrée] pour revenir au menu...")
 
+def ask_int(prompt: str, min_value: int, max_value: int) -> int:
+    """Ask the user for an integer between min_value and max_value (inclusive)."""
+    while True:
+        raw = input(prompt).strip()
+        try:
+            value = int(raw)
+            if min_value <= value <= max_value:
+                return value
+            print(f"❌ Entre {min_value} et {max_value} stp.")
+        except ValueError:
+            print("❌ Merci d'entrer un nombre entier.")
+
 # --- Core Functions ---
 def get_data():
     """Fetches data from Google Sheets."""
@@ -98,20 +110,43 @@ def main_menu():
         print("================================")
         print("      🎬 SÉLECTEUR DE FILMS     ")
         print("================================")
-        print("1. ⚖️  Équilibré (1 par catégorie)")
-        print("2. 🎲  Aléatoire (3 au hasard)")
-        print("3. 🎯  Roulette Russe (1 gagnant)")
+        print("1. ⚖️  Catégories au hasard (1 film chacune)")
+        print("2. 🎲  Aléatoire (3 films au hasard)")
+        print("3. 🎯  Roulette Russe (1 film gagnant)")
         print("q. Quitter")
         
         choice = input("\nVotre choix : ").strip().lower()
 
         if choice == '1':
             try:
-                selection = df.groupby('Catégorie').apply(lambda x: x.sample(1)).reset_index(drop=True)
-                display_results(selection, "SÉLECTION PAR CATÉGORIE")
+                categories = sorted(df['Catégorie'].dropna().unique().tolist())
+                if not categories:
+                    print("⚠️ Aucune catégorie disponible.")
+                    wait_for_user()
+                    continue
+
+                max_k = len(categories)
+                k = ask_int(f"\nCombien de catégories tirer au hasard ? (1-{max_k}) : ", 1, max_k)
+
+                # Tirage aléatoire de k catégories
+                chosen_categories = pd.Series(categories).sample(n=k, replace=False).tolist()
+
+                # Filtrer le DF sur ces catégories puis tirer 1 film par catégorie
+                df_subset = df[df['Catégorie'].isin(chosen_categories)]
+                selection = (
+                    df_subset
+                    .groupby('Catégorie', as_index=False)
+                    .sample(n=1)
+                    .reset_index(drop=True)
+                )
+
+                display_results(selection, f"SÉLECTION : {k} CATÉGORIES ALÉATOIRES")
+                print("\n📌 Catégories tirées :", ", ".join(chosen_categories))
+
             except Exception as e:
                 print(f"Erreur : {e}")
-            wait_for_user() # <--- Holds the screen
+
+            wait_for_user()
 
         elif choice == '2':
             count = min(3, len(df))
