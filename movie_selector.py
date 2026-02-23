@@ -3,6 +3,7 @@
 Enhanced Movie Selector
 Author: pineaulo (Enhanced by AI)
 Version: 3.0 (Interactive UI)
+Last update: add a random category selector
 """
 
 import sys
