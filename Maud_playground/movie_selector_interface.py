@@ -224,40 +224,35 @@ class MovieSelectorGUI:
         # --- Controls (left) ---
         ttk.Label(left, text="Mode", font=("Arial", 12, "bold")).pack(anchor="w", pady=(0, 6))
 
-        # Quick buttons
-        btns = ttk.Frame(left)
-        btns.pack(fill="x", pady=(0, 6))
-        ttk.Button(btns, text="⚖️ Équilibré", command=lambda: self.set_mode("equilibre")).grid(row=0, column=0, padx=2)
-        ttk.Button(btns, text="🎲 Aléatoire", command=lambda: self.set_mode("aleatoire")).grid(row=0, column=1, padx=2)
-        ttk.Button(btns, text="🎯 Roulette", command=lambda: self.set_mode("roulette")).grid(row=0, column=2, padx=2)
-
-        # Radiobuttons
-        rb = ttk.Frame(left)
-        rb.pack(fill="x", pady=(0, 6))
-        ttk.Radiobutton(rb, text="Équilibré", value="equilibre", variable=self.mode_var, command=self._sync_mode_widgets).pack(anchor="w")
-        ttk.Radiobutton(rb, text="Aléatoire (3 films)", value="aleatoire", variable=self.mode_var, command=self._sync_mode_widgets).pack(anchor="w")
-        ttk.Radiobutton(rb, text="Roulette (1 gagnant)", value="roulette", variable=self.mode_var, command=self._sync_mode_widgets).pack(anchor="w")
-
         # Dropdown
-        ttk.Label(left, text="Menu déroulant", font=("Arial", 10, "bold")).pack(anchor="w", pady=(8, 2))
-        options = ["Équilibré", "Aléatoire (3 films)", "Roulette (1 gagnant)"]
+        ttk.Label(left, text="Mode de tirage :", font=("Arial", 10, "bold")).pack(anchor="w", pady=(8, 2))
+        options = ["Équilibré (1 film par catégorie)", "Aléatoire (3 films random)", "Roulette (1 film gagnant)"]
         self.mode_menu = ttk.OptionMenu(left, self.mode_dropdown_var, options[0], *options, command=self._on_dropdown_change)
         self.mode_menu.pack(fill="x")
 
         ttk.Separator(left).pack(fill="x", pady=10)
 
-        # K categories controls (only meaningful for équilibré)
-        ttk.Label(left, text="Nombre de catégories (mode Équilibré)", font=("Arial", 10, "bold")).pack(anchor="w", pady=(0, 4))
+        # # K categories controls (only meaningful for équilibré)
+        # ttk.Label(left, text="Nombre de catégories (mode Équilibré)", font=("Arial", 10, "bold")).pack(anchor="w", pady=(0, 4))
 
-        krow = ttk.Frame(left)
-        krow.pack(fill="x", pady=(0, 8))
-        ttk.Label(krow, text="Spinbox:").grid(row=0, column=0, sticky="w")
-        self.k_spin = ttk.Spinbox(krow, from_=1, to=99, textvariable=self.k_var, width=6, command=self._on_k_change)
-        self.k_spin.grid(row=0, column=1, sticky="w", padx=(6, 0))
+        # krow = ttk.Frame(left)
+        # krow.pack(fill="x", pady=(0, 8))
+        # ttk.Label(krow, text="Spinbox:").grid(row=0, column=0, sticky="w")
+        # self.k_spin = ttk.Spinbox(krow, from_=1, to=99, textvariable=self.k_var, width=6)
+        # self.k_spin.grid(row=0, column=1, sticky="w", padx=(6, 0))
 
-        ttk.Label(left, text="Slider:").pack(anchor="w")
-        self.k_scale = ttk.Scale(left, from_=1, to=10, orient="horizontal", command=self._on_scale_move)
-        self.k_scale.pack(fill="x", pady=(0, 6))
+        # ----- Section Nombre de catégories -----
+        self.k_section = ttk.Frame(left)
+
+        ttk.Label(self.k_section, text="Nombre de catégories").pack(anchor="w")
+
+        krow = ttk.Frame(self.k_section)
+        krow.pack(fill="x", pady=(0, 6))
+
+        self.k_spin = ttk.Spinbox(krow, from_=1, to=99, textvariable=self.k_var, width=6)
+        self.k_spin.pack(side="left")
+
+        self.k_section.pack(fill="x", pady=(0, 6))
 
         ttk.Separator(left).pack(fill="x", pady=10)
 
@@ -312,11 +307,11 @@ class MovieSelectorGUI:
         view_row.rowconfigure(1, weight=1)
         view_row.columnconfigure(0, weight=1)
 
-        self.view_mode = tk.StringVar(value="table")
-        view_switch = ttk.Frame(view_row)
-        view_switch.grid(row=0, column=0, sticky="ew", pady=(0, 8))
-        ttk.Radiobutton(view_switch, text="Tableau", value="table", variable=self.view_mode, command=self._update_view_visibility).pack(side="left")
-        ttk.Radiobutton(view_switch, text="Liste simple", value="list", variable=self.view_mode, command=self._update_view_visibility).pack(side="left", padx=(12, 0))
+        # self.view_mode = tk.StringVar(value="table")
+        # view_switch = ttk.Frame(view_row)
+        # view_switch.grid(row=0, column=0, sticky="ew", pady=(0, 8))
+        # ttk.Radiobutton(view_switch, text="Tableau", value="table", variable=self.view_mode, command=self._update_view_visibility).pack(side="left")
+        # ttk.Radiobutton(view_switch, text="Liste simple", value="list", variable=self.view_mode, command=self._update_view_visibility).pack(side="left", padx=(12, 0))
 
         # Treeview (table)
         self.tree = ttk.Treeview(view_row, columns=("Catégorie", "Titre", "Année"), show="headings", height=12)
@@ -335,15 +330,15 @@ class MovieSelectorGUI:
         self.tree.configure(yscrollcommand=tree_scroll.set)
         tree_scroll.grid(row=1, column=1, sticky="ns")
 
-        # List view
-        self.listbox = tk.Listbox(view_row, height=12)
-        self.listbox.grid(row=1, column=0, sticky="nsew")
-        self.listbox_scroll = ttk.Scrollbar(view_row, orient="vertical", command=self.listbox.yview)
-        self.listbox.configure(yscrollcommand=self.listbox_scroll.set)
-        self.listbox_scroll.grid(row=1, column=1, sticky="ns")
+        # # List view
+        # self.listbox = tk.Listbox(view_row, height=12)
+        # self.listbox.grid(row=1, column=0, sticky="nsew")
+        # self.listbox_scroll = ttk.Scrollbar(view_row, orient="vertical", command=self.listbox.yview)
+        # self.listbox.configure(yscrollcommand=self.listbox_scroll.set)
+        # self.listbox_scroll.grid(row=1, column=1, sticky="ns")
 
-        # default to table visible
-        self._update_view_visibility()
+        # # default to table visible
+        # self._update_view_visibility()
 
         # --- History tab ---
         self.tab_history.columnconfigure(0, weight=1)
@@ -368,39 +363,48 @@ class MovieSelectorGUI:
         self.hist_details.grid(row=2, column=0, sticky="ew", padx=10, pady=(0, 10))
         self.hist_details.configure(state="disabled")
 
-    # --- Mode syncing ---
-    def set_mode(self, mode: str):
-        self.mode_var.set(mode)
-        self._sync_mode_widgets()
+        self.k_var.trace_add("write", lambda *_: self._on_k_change())
+
+    def _on_k_change(self):
+        # Clamp + refresh
+        try:
+            k = int(self.k_var.get())
+        except Exception:
+            self.k_var.set(1)
+            return
+
+        # Si tu as une borne max dynamique, utilise-la, sinon laisse large.
+        if k < 1:
+            self.k_var.set(1)
+
+        self._update_k_controls_state()
 
     def _on_dropdown_change(self, _value):
         mapping = {
-            "Équilibré": "equilibre",
-            "Aléatoire (3 films)": "aleatoire",
-            "Roulette (1 gagnant)": "roulette",
+            "Équilibré (1 film par catégorie)": "equilibre",
+            "Aléatoire (3 films random)": "aleatoire",
+            "Roulette (1 film gagnant)": "roulette",
         }
         self.mode_var.set(mapping.get(self.mode_dropdown_var.get(), "equilibre"))
-        self._sync_mode_widgets()
-
-    def _sync_mode_widgets(self):
-        # sync dropdown based on radio/buttons
-        inv = {
-            "equilibre": "Équilibré",
-            "aleatoire": "Aléatoire (3 films)",
-            "roulette": "Roulette (1 gagnant)",
-        }
-        self.mode_dropdown_var.set(inv.get(self.mode_var.get(), "Équilibré"))
         self._update_k_controls_state()
+
+    # def _update_k_controls_state(self):
+    #     is_equilibre = self.mode_var.get() == "equilibre"
+    #     state = "normal" if is_equilibre else "disabled"
+    #     try:
+    #         self.k_spin.configure(state=state)
+    #     except tk.TclError:
+    #         pass
 
     def _update_k_controls_state(self):
         is_equilibre = self.mode_var.get() == "equilibre"
-        state = "normal" if is_equilibre else "disabled"
-        try:
-            self.k_spin.configure(state=state)
-        except tk.TclError:
-            pass
-        # ttk.Scale doesn't have "disabled" in the same way, but we can set it
-        self.k_scale.state(["!disabled"] if is_equilibre else ["disabled"])
+
+        if is_equilibre:
+            if not self.k_section.winfo_ismapped():
+                self.k_section.pack(fill="x", pady=(0, 6))
+        else:
+            if self.k_section.winfo_ismapped():
+                self.k_section.pack_forget()
 
     # --- Data loading / filtering ---
     def _load_data(self):
@@ -468,7 +472,6 @@ class MovieSelectorGUI:
         self.status_lbl.config(text=f"🎬 Films disponibles après filtres : {len(self.df_filtered)} | Catégories : {len(cats)}")
 
     def _update_k_range(self, max_k: int):
-        # Update spinbox and scale bounds
         current = int(self.k_var.get())
         if current > max_k:
             self.k_var.set(max_k)
@@ -480,50 +483,35 @@ class MovieSelectorGUI:
         except tk.TclError:
             pass
 
-        self.k_scale.configure(from_=1, to=max_k)
-        # Keep scale in sync
-        self.k_scale.set(self.k_var.get())
+    # # --- Results display ---
+    # def _update_view_visibility(self):
+    #     if self.view_mode.get() == "table":
+    #         self.listbox.grid_remove()
+    #         self.listbox_scroll.grid_remove()
+    #         self.tree.grid()
+    #         # scrollbar already in same cell; keep
+    #         self.tree.yview_moveto(0)
+    #     else:
+    #         self.tree.grid_remove()
+    #         # its scrollbar stays; hide it and show listbox scroll
+    #         self.listbox.grid()
+    #         self.listbox_scroll.grid()
+    #         self.listbox.yview_moveto(0)
 
-    def _on_k_change(self):
-        # spinbox changed -> update scale
-        try:
-            v = int(self.k_var.get())
-            self.k_scale.set(v)
-        except Exception:
-            pass
-
-    def _on_scale_move(self, value):
-        # scale moved -> update spinbox int var
-        try:
-            self.k_var.set(int(float(value)))
-        except Exception:
-            pass
-
-    # --- Results display ---
-    def _update_view_visibility(self):
-        if self.view_mode.get() == "table":
-            self.listbox.grid_remove()
-            self.listbox_scroll.grid_remove()
-            self.tree.grid()
-            # scrollbar already in same cell; keep
-            self.tree.yview_moveto(0)
-        else:
-            self.tree.grid_remove()
-            # its scrollbar stays; hide it and show listbox scroll
-            self.listbox.grid()
-            self.listbox_scroll.grid()
-            self.listbox.yview_moveto(0)
+    # def clear_results(self):
+    #     for item in self.tree.get_children():
+    #         self.tree.delete(item)
+    #     self.listbox.delete(0, tk.END)
 
     def clear_results(self):
         for item in self.tree.get_children():
             self.tree.delete(item)
-        self.listbox.delete(0, tk.END)
 
     def show_selection(self, selection: pd.DataFrame, meta: dict):
         self.clear_results()
 
         if selection is None or selection.empty:
-            self.listbox.insert(tk.END, "Aucune sélection.")
+            # self.listbox.insert(tk.END, "Aucune sélection.")
             return
 
         # Prepare for tree
@@ -555,11 +543,11 @@ class MovieSelectorGUI:
 
             self.tree.insert("", tk.END, values=(cat, title, year_str), tags=tuple(tags))
 
-            # list view text
-            if year_str:
-                self.listbox.insert(tk.END, f"• [{cat}] {title} ({year_str})")
-            else:
-                self.listbox.insert(tk.END, f"• [{cat}] {title}")
+            # # list view text
+            # if year_str:
+            #     self.listbox.insert(tk.END, f"• [{cat}] {title} ({year_str})")
+            # else:
+            #     self.listbox.insert(tk.END, f"• [{cat}] {title}")
 
         # Configure tag styles (basic highlight)
         self.tree.tag_configure("even", background="#FFFFFF")
