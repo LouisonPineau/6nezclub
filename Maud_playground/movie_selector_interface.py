@@ -232,15 +232,6 @@ class MovieSelectorGUI:
 
         ttk.Separator(left).pack(fill="x", pady=10)
 
-        # # K categories controls (only meaningful for équilibré)
-        # ttk.Label(left, text="Nombre de catégories (mode Équilibré)", font=("Arial", 10, "bold")).pack(anchor="w", pady=(0, 4))
-
-        # krow = ttk.Frame(left)
-        # krow.pack(fill="x", pady=(0, 8))
-        # ttk.Label(krow, text="Spinbox:").grid(row=0, column=0, sticky="w")
-        # self.k_spin = ttk.Spinbox(krow, from_=1, to=99, textvariable=self.k_var, width=6)
-        # self.k_spin.grid(row=0, column=1, sticky="w", padx=(6, 0))
-
         # ----- Section Nombre de catégories -----
         self.k_section = ttk.Frame(left)
 
@@ -307,12 +298,6 @@ class MovieSelectorGUI:
         view_row.rowconfigure(1, weight=1)
         view_row.columnconfigure(0, weight=1)
 
-        # self.view_mode = tk.StringVar(value="table")
-        # view_switch = ttk.Frame(view_row)
-        # view_switch.grid(row=0, column=0, sticky="ew", pady=(0, 8))
-        # ttk.Radiobutton(view_switch, text="Tableau", value="table", variable=self.view_mode, command=self._update_view_visibility).pack(side="left")
-        # ttk.Radiobutton(view_switch, text="Liste simple", value="list", variable=self.view_mode, command=self._update_view_visibility).pack(side="left", padx=(12, 0))
-
         # Treeview (table)
         self.tree = ttk.Treeview(view_row, columns=("Catégorie", "Titre", "Année"), show="headings", height=12)
         self.tree.grid(row=1, column=0, sticky="nsew")
@@ -330,23 +315,16 @@ class MovieSelectorGUI:
         self.tree.configure(yscrollcommand=tree_scroll.set)
         tree_scroll.grid(row=1, column=1, sticky="ns")
 
-        # # List view
-        # self.listbox = tk.Listbox(view_row, height=12)
-        # self.listbox.grid(row=1, column=0, sticky="nsew")
-        # self.listbox_scroll = ttk.Scrollbar(view_row, orient="vertical", command=self.listbox.yview)
-        # self.listbox.configure(yscrollcommand=self.listbox_scroll.set)
-        # self.listbox_scroll.grid(row=1, column=1, sticky="ns")
-
-        # # default to table visible
-        # self._update_view_visibility()
-
         # --- History tab ---
         self.tab_history.columnconfigure(0, weight=1)
         self.tab_history.rowconfigure(1, weight=1)
 
-        ttk.Label(self.tab_history, text="Historique des tirages", font=("Arial", 12, "bold")).grid(row=0, column=0, sticky="w", padx=10, pady=(10, 6))
+        ttk.Label(self.tab_history, text="Historique des tirages", 
+                  font=("Arial", 12, "bold")).grid(row=0, column=0, sticky="w",
+                                                   padx=10, pady=(10, 6))
 
-        self.hist_tree = ttk.Treeview(self.tab_history, columns=("Date", "Mode", "Détails"), show="headings")
+        self.hist_tree = ttk.Treeview(self.tab_history, 
+                                      columns=("Date", "Mode", "Détails"), show="headings")
         self.hist_tree.grid(row=1, column=0, sticky="nsew", padx=10, pady=(0, 10))
 
         self.hist_tree.heading("Date", text="Date")
@@ -369,7 +347,7 @@ class MovieSelectorGUI:
         # Clamp + refresh
         try:
             k = int(self.k_var.get())
-        except Exception:
+        except ImportError:
             self.k_var.set(1)
             return
 
@@ -387,14 +365,6 @@ class MovieSelectorGUI:
         }
         self.mode_var.set(mapping.get(self.mode_dropdown_var.get(), "equilibre"))
         self._update_k_controls_state()
-
-    # def _update_k_controls_state(self):
-    #     is_equilibre = self.mode_var.get() == "equilibre"
-    #     state = "normal" if is_equilibre else "disabled"
-    #     try:
-    #         self.k_spin.configure(state=state)
-    #     except tk.TclError:
-    #         pass
 
     def _update_k_controls_state(self):
         is_equilibre = self.mode_var.get() == "equilibre"
@@ -483,26 +453,6 @@ class MovieSelectorGUI:
         except tk.TclError:
             pass
 
-    # # --- Results display ---
-    # def _update_view_visibility(self):
-    #     if self.view_mode.get() == "table":
-    #         self.listbox.grid_remove()
-    #         self.listbox_scroll.grid_remove()
-    #         self.tree.grid()
-    #         # scrollbar already in same cell; keep
-    #         self.tree.yview_moveto(0)
-    #     else:
-    #         self.tree.grid_remove()
-    #         # its scrollbar stays; hide it and show listbox scroll
-    #         self.listbox.grid()
-    #         self.listbox_scroll.grid()
-    #         self.listbox.yview_moveto(0)
-
-    # def clear_results(self):
-    #     for item in self.tree.get_children():
-    #         self.tree.delete(item)
-    #     self.listbox.delete(0, tk.END)
-
     def clear_results(self):
         for item in self.tree.get_children():
             self.tree.delete(item)
@@ -511,7 +461,6 @@ class MovieSelectorGUI:
         self.clear_results()
 
         if selection is None or selection.empty:
-            # self.listbox.insert(tk.END, "Aucune sélection.")
             return
 
         # Prepare for tree
@@ -531,7 +480,7 @@ class MovieSelectorGUI:
             if has_year and pd.notna(year):
                 try:
                     year_str = str(int(year))
-                except Exception:
+                except ImportError:
                     year_str = str(year)
 
             tags = []
@@ -542,12 +491,6 @@ class MovieSelectorGUI:
                 tags.append("winner")
 
             self.tree.insert("", tk.END, values=(cat, title, year_str), tags=tuple(tags))
-
-            # # list view text
-            # if year_str:
-            #     self.listbox.insert(tk.END, f"• [{cat}] {title} ({year_str})")
-            # else:
-            #     self.listbox.insert(tk.END, f"• [{cat}] {title}")
 
         # Configure tag styles (basic highlight)
         self.tree.tag_configure("even", background="#FFFFFF")
@@ -583,7 +526,7 @@ class MovieSelectorGUI:
             if col == "Année":
                 try:
                     return int(v)
-                except Exception:
+                except ImportError:
                     return -10**9
             return str(v).lower()
 
@@ -624,6 +567,7 @@ class MovieSelectorGUI:
         self._refresh_history_view(item)
 
     def copy_selection(self):
+        "insert docstring"
         # copy latest selection from status/results by reconstructing from view
         if not self.history:
             messagebox.showinfo("Copier", "Aucun tirage à copier pour le moment.")
@@ -679,7 +623,7 @@ def main():
             # fallback to default / clam
             if "clam" in style.theme_names():
                 style.theme_use("clam")
-    except Exception:
+    except ImportError:
         pass
 
     app = MovieSelectorGUI(root)
