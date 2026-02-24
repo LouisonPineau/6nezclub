@@ -56,7 +56,8 @@ def get_data():
         sys.exit(1)
 
     try:
-        df = pd.read_csv(BytesIO(r.content), index_col=0) 
+        # df = pd.read_csv(BytesIO(r.content), index_col=0) # Commented by Maud: normally, it helps with the new google sheet
+        df = pd.read_csv(BytesIO(r.content))
     except Exception as e:
         print(f"\n❌ Erreur CSV : {e}")
         sys.exit(1)

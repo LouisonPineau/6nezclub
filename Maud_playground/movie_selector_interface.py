@@ -29,7 +29,7 @@ def fetch_data() -> pd.DataFrame:
         raise RuntimeError(f"Erreur de connexion Internet : {e}") from e
 
     try:
-        df = pd.read_csv(BytesIO(r.content), index_col=0)
+        df = pd.read_csv(BytesIO(r.content))
     except Exception as e:
         raise RuntimeError(f"Erreur CSV : {e}") from e
 

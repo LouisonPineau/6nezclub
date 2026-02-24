@@ -15,7 +15,8 @@ r = requests.get('https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-I3jNSGm4lQ4
 data = r.content
 
 #Format the data into a panda dataframe
-df = pd.read_csv(BytesIO(data), index_col=0)
+# df = pd.read_csv(BytesIO(data), index_col=0) # Commented by Maud: normally, it helps with the new google sheet
+df = pd.read_csv(BytesIO(data))
 
 #Resampling to only take unseen movies (google sheet will need to be updated regularly).
 #For this, we create a new dataframe containing only the rows for which
